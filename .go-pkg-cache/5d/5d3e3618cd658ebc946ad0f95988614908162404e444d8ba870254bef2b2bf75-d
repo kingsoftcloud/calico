@@ -1,0 +1,5 @@
+./doc.go
+./errors.go
+./legacy_mutex_windows.go
+./mutex.go
+./mutex_windows.go

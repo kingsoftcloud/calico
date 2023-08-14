@@ -1,0 +1,10 @@
+./blockaffinity.go
+./doc.go
+./ipam_block.go
+./ipam_config.go
+./ipam_handle.go
+./node.go
+./openapi_generated.go
+./register.go
+./workloadendpoint.go
+./zz_generated.deepcopy.go

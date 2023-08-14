@@ -1,0 +1,2 @@
+./regstate.go
+./zsyscall_windows.go

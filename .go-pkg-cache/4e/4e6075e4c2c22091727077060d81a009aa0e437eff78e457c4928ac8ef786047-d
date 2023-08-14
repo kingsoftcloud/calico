@@ -1,0 +1,3 @@
+./azure.go
+./endpoint.go
+./network.go

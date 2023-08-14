@@ -1,0 +1,4 @@
+./delete.go
+./get.go
+./listwatch.go
+./set.go

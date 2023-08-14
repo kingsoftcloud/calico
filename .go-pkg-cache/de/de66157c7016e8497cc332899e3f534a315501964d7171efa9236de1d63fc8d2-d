@@ -1,0 +1,13 @@
+./admissionpolicyspec.go
+./matchresources.go
+./namedrulewithoperations.go
+./paramkind.go
+./paramref.go
+./paramsource.go
+./rule.go
+./rulewithoperations.go
+./validatingadmissionpolicy.go
+./validatingadmissionpolicybinding.go
+./validatingadmissionpolicybindingspec.go
+./validatingadmissionpolicyspec.go
+./validation.go

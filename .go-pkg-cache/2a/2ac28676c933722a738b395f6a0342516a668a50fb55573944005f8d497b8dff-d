@@ -1,0 +1,7 @@
+./compare.go
+./constraint.go
+./doc.go
+./group.go
+./normalize.go
+./sort.go
+./stability.go

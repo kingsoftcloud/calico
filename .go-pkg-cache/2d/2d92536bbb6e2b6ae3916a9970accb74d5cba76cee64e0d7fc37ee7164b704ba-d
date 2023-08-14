@@ -1,0 +1,11 @@
+./dir_windows.go
+./doc.go
+./filereader.go
+./fileutil.go
+./lock.go
+./lock_windows.go
+./preallocate.go
+./preallocate_unsupported.go
+./purge.go
+./read_dir.go
+./sync.go

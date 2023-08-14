@@ -1,0 +1,14 @@
+./allocationresult.go
+./podscheduling.go
+./podschedulingspec.go
+./podschedulingstatus.go
+./resourceclaim.go
+./resourceclaimconsumerreference.go
+./resourceclaimparametersreference.go
+./resourceclaimschedulingstatus.go
+./resourceclaimspec.go
+./resourceclaimstatus.go
+./resourceclaimtemplate.go
+./resourceclaimtemplatespec.go
+./resourceclass.go
+./resourceclassparametersreference.go

@@ -1,0 +1,3 @@
+./atomic.go
+./file_windows.go
+./zfile_windows.go
