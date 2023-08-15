@@ -23,9 +23,9 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
+	//"time"
 
-	"github.com/howeyc/fsnotify"
+	//"github.com/howeyc/fsnotify"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nmrshll/go-cp"
 	"github.com/prometheus/common/log"
@@ -252,7 +252,7 @@ func Install() error {
 
 	// Unless told otherwise, sleep forever.
 	// This prevents Kubernetes from restarting the pod repeatedly.
-	logrus.Infof("Done configuring CNI.  Sleep= %v", c.ShouldSleep)
+	/*logrus.Infof("Done configuring CNI.  Sleep= %v", c.ShouldSleep)
 	for c.ShouldSleep {
 		// Kubernetes Secrets can be updated.  If so, we need to install the updated
 		// version to the host. Just check the timestamp on the certificate to see if it
@@ -297,9 +297,37 @@ func Install() error {
 
 		watcher.Close()
 	}
+	return nil*/
+
+	Run()
+
 	return nil
 }
 
+func Run() {
+        clientset, err := cni.BuildClientSet()
+        if err != nil {
+                logrus.WithError(err).Fatal("Failed to create in cluster client set")
+        }
+        tr := cni.NewTokenRefresher(clientset, cni.NamespaceOfUsedServiceAccount(), cni.CNIServiceAccountName())
+        tokenChan := tr.TokenChan()
+        go tr.Run()
+
+        for tu := range tokenChan {
+                logrus.Info("Update of CNI kubeconfig triggered based on elapsed time.")
+                cfg, err := rest.InClusterConfig()
+                if err != nil {
+                        logrus.WithError(err).Error("Error generating kube config.")
+                        continue
+                }
+                err = rest.LoadTLSFiles(cfg)
+                if err != nil {
+                        logrus.WithError(err).Error("Error loading TLS files.")
+                        continue
+                }
+                writeKubeconfigWithToken(cfg, tu.Token)
+        }
+}
 func isValidJSON(s string) error {
 	var js map[string]interface{}
 	return json.Unmarshal([]byte(s), &js)
@@ -316,8 +344,9 @@ func writeCNIConfig(c config) {
       "log_file_path": "__LOG_FILE_PATH__",
       "datastore_type": "__DATASTORE_TYPE__",
       "nodename": "__KUBERNETES_NODE_NAME__",
+      "nodename_file_optional": true,
       "mtu": __CNI_MTU__,
-      "ipam": {"type": "calico-ipam"},
+      "ipam": {"type": "host-local", "subnet": "usePodCidr"},
       "policy": {"type": "k8s"},
       "kubernetes": {"kubeconfig": "__KUBECONFIG_FILEPATH__"}
     },
@@ -325,6 +354,10 @@ func writeCNIConfig(c config) {
       "type": "portmap",
       "snat": true,
       "capabilities": {"portMappings": true}
+    },
+    {
+      "type": "bandwidth",
+      "capabilities":{"bandwidth":true}
     }
   ]
 }`
@@ -421,6 +454,38 @@ func writeCNIConfig(c config) {
 			logrus.WithError(err).Warnf("Failed to remove %s", oldName)
 		}
 	}
+}
+
+// writeKubeconfig writes an updated kubeconfig file to disk that the CNI plugin can use to access the Kubernetes API.
+func writeKubeconfigWithToken(cfg *rest.Config, token string) {
+        template := `# Kubeconfig file for Calico CNI plugin. Installed by calico/node.
+apiVersion: v1
+kind: Config
+clusters:
+- name: local
+  cluster:
+    server: %s
+    certificate-authority-data: "%s"
+users:
+- name: calico
+  user:
+    token: %s
+contexts:
+- name: calico-context
+  context:
+    cluster: local
+    user: calico
+current-context: calico-context`
+
+        // Replace the placeholders.
+        data := fmt.Sprintf(template, cfg.Host, base64.StdEncoding.EncodeToString(cfg.CAData), token)
+
+        // Write the filled out config to disk.
+        if err := ioutil.WriteFile("/host/etc/cni/net.d/calico-kubeconfig", []byte(data), 0600); err != nil {
+                logrus.WithError(err).Error("Failed to write CNI plugin kubeconfig file")
+                return
+        }
+        logrus.WithField("path", "/host/etc/cni/net.d/calico-kubeconfig").Info("Wrote updated CNI kubeconfig file.")
 }
 
 // copyFileAndPermissions copies file permission

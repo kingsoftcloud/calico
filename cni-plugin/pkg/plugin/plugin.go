@@ -225,7 +225,7 @@ func cmdAdd(args *skel.CmdArgs) (err error) {
 	}
 
 	ctx := context.Background()
-	ci, err := calicoClient.ClusterInformation().Get(ctx, "default", options.GetOptions{})
+	/*ci, err := calicoClient.ClusterInformation().Get(ctx, "default", options.GetOptions{})
 	if err != nil {
 		err = fmt.Errorf("error getting ClusterInformation: %v", err)
 		return
@@ -234,7 +234,7 @@ func cmdAdd(args *skel.CmdArgs) (err error) {
 		logrus.Info("Upgrade may be in progress, ready flag is not set")
 		err = fmt.Errorf("Calico is currently not ready to process requests")
 		return
-	}
+	}*/
 
 	for _, endpoint := range conf.ReadinessGates {
 		if _, err := url.ParseRequestURI(endpoint); err != nil {
@@ -621,7 +621,7 @@ func cmdDel(args *skel.CmdArgs) (err error) {
 	}
 
 	ctx := context.Background()
-	var ci *api.ClusterInformation
+	/*var ci *api.ClusterInformation
 	ci, err = calicoClient.ClusterInformation().Get(ctx, "default", options.GetOptions{})
 	if err != nil {
 		err = fmt.Errorf("error getting ClusterInformation: %v", err)
@@ -631,7 +631,7 @@ func cmdDel(args *skel.CmdArgs) (err error) {
 		logrus.Info("Upgrade may be in progress, ready flag is not set")
 		err = fmt.Errorf("Calico is currently not ready to process requests")
 		return
-	}
+	}*/
 
 	// Calculate the WEP name so we can call DEL on the exact endpoint.
 	epIDs.WEPName, err = epIDs.CalculateWorkloadEndpointName(false)
