@@ -63,6 +63,8 @@ type config struct {
 
 	ShouldSleep bool `envconfig:"SLEEP" default:"true"`
 
+	MonitorToken bool `envconfig:"MONITOR_TOKEN" default:"false"`
+
 	ServiceAccountToken []byte
 }
 
@@ -245,7 +247,7 @@ func Install() error {
 	if kubecfg != nil {
 		// If running as a Kubernetes pod, then write out a kubeconfig for the
 		// CNI plugin to use.
-		writeKubeconfig(kubecfg)
+		writeKubeconfigWithToken(kubecfg, string(c.ServiceAccountToken))
 	}
 
 	// Write a CNI config file.
@@ -300,8 +302,14 @@ func Install() error {
 	}
 	return nil*/
 
-	Run()
-
+	if c.MonitorToken {
+		logrus.Infof("Done configuring CNI. Start monitoring token...")
+		Run()
+	} else {
+		logrus.Infof("Done configuring CNI.  Sleep...")
+		done := make(chan bool)
+		<-done
+	}
 	return nil
 }
 
